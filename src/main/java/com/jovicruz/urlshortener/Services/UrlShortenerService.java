@@ -9,8 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.jovicruz.urlshortener.domain.Url;
-import com.jovicruz.urlshortener.domain.UrlRepository;
 import com.jovicruz.urlshortener.dtos.UrlResponse;
+import com.jovicruz.urlshortener.exceptions.UrlNotFoundException;
+import com.jovicruz.urlshortener.repositories.UrlRepository;
 
 @Service
 public class UrlShortenerService {
@@ -23,9 +24,14 @@ public class UrlShortenerService {
 
 
     public Optional<String> getOriginalUrl(String shortUrl){
-        return repo.findOriginalUrlByShortenedUrl(shortUrl)
-               .map(url -> url.getOriginalUrl());
 
+        Optional<String> originalUrl = repo.findOriginalUrlByShortenedUrl(shortUrl)
+        .map(url -> url.getOriginalUrl());
+
+        if (originalUrl.isEmpty()) {
+            throw new UrlNotFoundException();
+        }
+        return originalUrl;
     }
 
     public UrlResponse saveShortenedUrl(String urlOriginal){
@@ -33,7 +39,10 @@ public class UrlShortenerService {
         urlShort.setDateAdded(LocalDateTime.now());
         urlShort.setOriginalUrl(urlOriginal); 
 
-        String generatedUrl = generateShortUrl(urlOriginal);
+        String generatedUrl;
+        do {
+            generatedUrl = generateShortUrl();
+        } while (repo.existsByShortenedUrl(generatedUrl));
         urlShort.setShortenedUrl(generatedUrl);
 
         urlShort = repo.save(urlShort);
@@ -47,7 +56,7 @@ public class UrlShortenerService {
         return response;
     }
 
-    public String generateShortUrl(String urlOriginal){
+    public String generateShortUrl(){
         String alphanumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                             + "0123456789"
                             + "abcdefghijklmnopqrstuvwxyz";

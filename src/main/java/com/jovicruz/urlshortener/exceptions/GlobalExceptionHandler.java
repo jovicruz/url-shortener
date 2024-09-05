@@ -1,4 +1,4 @@
-package com.jovicruz.urlshortener.exception;
+package com.jovicruz.urlshortener.exceptions;
 
 
 import org.springframework.http.HttpStatus;
@@ -25,5 +25,11 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UrlNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<String> handleUrlNotFoundException(UrlNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Url not found!");
     }
 }

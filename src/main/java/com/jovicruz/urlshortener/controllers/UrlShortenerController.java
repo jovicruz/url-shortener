@@ -28,31 +28,25 @@ public class UrlShortenerController {
 
     @GetMapping("/r/{shortUrl}")
     public ResponseEntity<String> redirectUrl(@PathVariable String shortUrl, HttpServletResponse response) {
-        try {
             Optional<String> urlOriginal = service.getOriginalUrl(shortUrl);
-    
-            if (urlOriginal.isEmpty()) {
-                //retorna 404 se a url não for encontrada
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Url not found for this short code");
+
+            try {
+                response.sendRedirect(urlOriginal.get());
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during redirection");
             }
-    
-            response.sendRedirect(urlOriginal.get());
             return ResponseEntity.ok().build();
-    
-        } catch (IOException e) {
-            //retorna 500 caso de falha no redirecionamento
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Redirection error");
-        }
+        
     
 }
 
     @PostMapping("/newurl")
-    public ResponseEntity<UrlResponse> createNewShortUrl(@Valid @RequestBody UrlRequest request){
+    public ResponseEntity<?> createNewShortUrl(@Valid @RequestBody UrlRequest request){
         try {
             UrlResponse response = service.saveShortenedUrl(request.getUrl());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during shortUrl creation");
         }
     }
 
