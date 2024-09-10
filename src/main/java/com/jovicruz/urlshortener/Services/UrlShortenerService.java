@@ -44,12 +44,14 @@ public class UrlShortenerService {
             generatedUrl = generateShortUrl();
         } while (repo.existsByShortenedUrl(generatedUrl));
         urlShort.setShortenedUrl(generatedUrl);
-
         urlShort = repo.save(urlShort);
+
+        String fullRedirectUrl = BASE_URL + "/r/" + urlShort.getShortenedUrl();
 
         UrlResponse response = new UrlResponse(
             urlShort.getOriginalUrl(),
-            BASE_URL + "/r/" + urlShort.getShortenedUrl() 
+            fullRedirectUrl,
+            "https://api.qrserver.com/v1/create-qr-code/?data=" + fullRedirectUrl
         );
         
 

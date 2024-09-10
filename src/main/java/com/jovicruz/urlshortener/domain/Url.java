@@ -12,8 +12,8 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Table(name = "UrlShortened")
-@Entity(name = "UrlShortened")
+@Table(name = "Url")
+@Entity(name = "Url")
 @Getter
 @Setter
 @AllArgsConstructor
